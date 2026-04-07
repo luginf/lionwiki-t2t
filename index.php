@@ -119,17 +119,28 @@ $T_WRONG_PASSWORD = 'Password is incorrect.';
 $T_ALREADY_LOGGED_IN = 'You are already logged in!';
 
 if (isset($_GET['lang'])) {
-    $LANG = clear_path($_GET['lang']);
+    $LANG = preg_replace('/[^a-zA-Z0-9_\-]/', '', $_GET['lang']);
     setcookie('LW_LANG', $LANG, time() + 365 * 86400);
 } elseif (isset($_COOKIE['LW_LANG'])) {
-    $LANG = clear_path($_COOKIE['LW_LANG']);
+    $LANG = preg_replace('/[^a-zA-Z0-9_\-]/', '', $_COOKIE['LW_LANG']);
 } else {
-    list($LANG) = explode(',', clear_path($_SERVER['HTTP_ACCEPT_LANGUAGE']));
+    list($LANG) = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+    $LANG = preg_replace('/[^a-zA-Z0-9_\-]/', '', $LANG);
 }
 
-if((@include "$LANG_DIR$LANG.php") === false && (@include $LANG_DIR . substr($LANG, 0, 2) . '.php') === false) {
+// Only include language files that physically exist inside the lang directory
+$_lang_real_dir = realpath($LANG_DIR);
+$_lang_file     = $LANG_DIR . $LANG . '.php';
+$_lang_file_short = $LANG_DIR . substr($LANG, 0, 2) . '.php';
+
+if ($_lang_real_dir && file_exists($_lang_file) && strpos(realpath($_lang_file), $_lang_real_dir) === 0) {
+    include $_lang_file;
+} elseif ($_lang_real_dir && file_exists($_lang_file_short) && strpos(realpath($_lang_file_short), $_lang_real_dir) === 0) {
+    include $_lang_file_short;
+} else {
     $LANG = 'en';
 }
+unset($_lang_real_dir, $_lang_file, $_lang_file_short);
 
 @require 'config.php'; // config file is not required, see settings above
 
@@ -724,12 +735,8 @@ function clear_path($s)
         $ret .= ctype_cntrl($s[$i]) ? "" : $s[$i];
     }
 
-    // old:
-    return trim(str_replace(array('..', '<', '>', '"', '//', '/.', '\\\\'), "", $ret), "/");
+    return trim(str_replace(array('..', '<', '>', '"', '//', '/.', '\\\\', "\0"), "", $ret), "/");
 }
-
-//new: (TODO security update doesn't work)
-//    return trim(str_replace(array('..', '<', '>', '"', '//', '/.', '\\\\', '/', '\\'), "", $ret), "/");
 
 function rev_time($time)
 {

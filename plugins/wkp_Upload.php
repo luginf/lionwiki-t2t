@@ -61,6 +61,14 @@ class Upload
                 $rel_dir = ltrim(clear_path($_REQUEST['curdir']), "/");
                 $abs_dir = $this->datadir . $rel_dir;
 
+                // Prevent path traversal: ensure resolved path stays inside datadir
+                $real_datadir = realpath($this->datadir);
+                $real_abs_dir = realpath($abs_dir);
+                if ($real_datadir === false || $real_abs_dir === false || strpos($real_abs_dir . '/', $real_datadir . '/') !== 0) {
+                    $rel_dir = '';
+                    $abs_dir = $this->datadir;
+                }
+
                 if (authentified()) {
                     if(!empty($_POST['dir2create'])) {
                         @mkdir($abs_dir . '/' . clear_path($_POST['dir2create']), $this->chmod_dir);
