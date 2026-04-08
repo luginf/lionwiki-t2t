@@ -1,8 +1,8 @@
-<?php $T2TVersion = "20240709";
+<?php $T2TVersion = "20260408";
 /**
   txt2tags.class.php
 
-  This version is for PHP >= 5.3 until at least PHP 8.2
+  This version is for PHP >= 5.3 until at least PHP 8.4
 
   Written by (c) Petko Yotov 2012-2016 www.pmwiki.org/petko
   Development sponsored and continued by Éric Forgeot.
