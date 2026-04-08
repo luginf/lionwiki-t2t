@@ -2,7 +2,7 @@
 /**
   txt2tags.class.php
 
-  This version is for PHP >= 5.3 until at least PHP 7.4 / PHP 8.2
+  This version is for PHP >= 5.3 until at least PHP 8.2
 
   Written by (c) Petko Yotov 2012-2016 www.pmwiki.org/petko
   Development sponsored and continued by Éric Forgeot.
@@ -71,30 +71,30 @@
 
 class T2T {
   # these variables could be read or forced
-  var $title = '';         # the document title
-  var $content = '';       # the content of the t2t file
-  var $headers = '';       # the first 3 lines of the t2t file
-  var $enableheaders = 0;  # enables the first 3 lines headers    (default=1)
-  var $enableproc = 1;     # enables the pre and post processor   (default=1)
-  var $enabletagged = 1;   # enables the tagged mark (''tagged'') (default=1)
-  var $enableraw = 1;      # enables the raw mark (""raw"")       (default=1)
-  var $enableverbatim = 1; # enables the verbatim mark (``raw``)  (default=1)
-  var $enablehotlinks = 1; # enables hotlinks [http://www.externalserver.com/images.jpg]  (default=1) (note: it's not enabled in the python implementation of txt2tags)
-  var $enableimgplacement = 0; # enables "automatic" placement of image according to space before or after markup. It can be confusing and annoying so we disable it by default now (default=0) 
-  var $config = '';       # the full config area, including ext.ref.
-  var $bodytext = '';     # the full body text after inclusions
-  var $bodyhtml = '';     # the innerHTML of the body of the output, no <html>...<head>
-  var $fullhtml = '';     # the full <html>...</html> output
-  var $enabletoc = 0;     # automatically enabled if %%toc or %!options: --toc
-  var $enableinclude = 1; # allow file inclusions 
-  var $maxtoclevels = 5;  # h1-h? titles go into toc, same as %!options: --toc-level 1
-  var $mtime;             # last modified timestamp of the input file
-  var $date;              # timestamp of the current date
-  var $cssfile = '';      # the css file to be included in the HTML header
-  var $maskemail = 0;     # rewrite plaintext e-mail links
-  var $encoding = "UTF-8";             # assume default encoding if none in file
-  var $parsetargets = "html|xhtml";    # accept %!command(html) and %!command(xhtml)
-  var $snippets = array(
+  public $title = '';         # the document title
+  public $content = '';       # the content of the t2t file
+  public $headers = '';       # the first 3 lines of the t2t file
+  public $enableheaders = 0;  # enables the first 3 lines headers    (default=1)
+  public $enableproc = 1;     # enables the pre and post processor   (default=1)
+  public $enabletagged = 1;   # enables the tagged mark (''tagged'') (default=1)
+  public $enableraw = 1;      # enables the raw mark (""raw"")       (default=1)
+  public $enableverbatim = 1; # enables the verbatim mark (``raw``)  (default=1)
+  public $enablehotlinks = 1; # enables hotlinks [http://www.externalserver.com/images.jpg]  (default=1) (note: it's not enabled in the python implementation of txt2tags)
+  public $enableimgplacement = 0; # enables "automatic" placement of image according to space before or after markup. It can be confusing and annoying so we disable it by default now (default=0)
+  public $config = '';       # the full config area, including ext.ref.
+  public $bodytext = '';     # the full body text after inclusions
+  public $bodyhtml = '';     # the innerHTML of the body of the output, no <html>...<head>
+  public $fullhtml = '';     # the full <html>...</html> output
+  public $enabletoc = 0;     # automatically enabled if %%toc or %!options: --toc
+  public $enableinclude = 1; # allow file inclusions
+  public $maxtoclevels = 5;  # h1-h? titles go into toc, same as %!options: --toc-level 1
+  public $mtime;             # last modified timestamp of the input file
+  public $date;              # timestamp of the current date
+  public $cssfile = '';      # the css file to be included in the HTML header
+  public $maskemail = 0;     # rewrite plaintext e-mail links
+  public $encoding = "UTF-8";             # assume default encoding if none in file
+  public $parsetargets = "html|xhtml";    # accept %!command(html) and %!command(xhtml)
+  public $snippets = array(
   'header1'         => "<h1>%s</h1>\n", # text (first line of file)
   'header2'         => "<h2>%s</h2>\n", # text
   'header3'         => "<h3>%s</h3>\n", # text
@@ -157,31 +157,26 @@ class T2T {
 %s
 </body></html>');
   # used internally
-  var $infile = array();
-  var $outfile = array();
-  var $preproc = array();
-  var $postproc = array();
-  var $KPV = array();
-  var $KPCount = 0;
-  var $csslink = '';
+  public $infile = array();
+  public $outfile = array();
+  public $preproc = array();
+  public $postproc = array();
+  public $KPV = array();
+  public $KPCount = 0;
+  public $csslink = '';
   
   
   public function __construct($input, $isfile = 0) {
-    $this->T2T($input, $isfile);
-  }
-  
-  function T2T($input, $isfile = 0) {    
-    
     $this->set_macros($input, $isfile);     # macros
     # get content
-    $this->content = $isfile 
-      ? $this->read($input, true) 
+    $this->content = $isfile
+      ? $this->read($input, true)
       : str_replace("\r", '', $input);
-    
+
     # get header, config, body
     $this->R = $this->head_conf_body($this->content);
-    
-    # public variables 
+
+    # public variables
     $this->headers  = implode("\n", $this->R['header']);
     $this->config   = implode("\n", $this->R['config']);
     $this->bodytext = implode("\n", $this->R['body']);
@@ -252,7 +247,7 @@ class T2T {
     if(! preg_match("/^ *(\"[^\"]+\"|'[^']+'|\\S+)\\s*(.*)$/", $x, $m)) return;
     
     $s = preg_replace('/^("|\')(.*?)\\1$/', '$2', trim($m[1]));
-    $r = preg_replace('/^("|\')(.*?)\\1$/', '$2', trim(@$m[2]));
+    $r = preg_replace('/^("|\')(.*?)\\1$/', '$2', trim($m[2] ?? ''));
     $r = preg_replace('/\\\\(?=[0-9])/', '$', $r);
     $r = str_replace(array('\\n', '\\t'), array("\n", "\t"), $r);
     return array("\032$s\032m", $r);
@@ -314,7 +309,7 @@ class T2T {
       if(preg_match('/^ *((=){1,5})(?!=)\\s*(\\S.*[^=]|[^\\s=])\\1(?:\\[([\\w-]+)\\])?\\s*$/', $line, $m) ||
         preg_match('/^ *((\\+){1,5})(?!\\+)\\s*(\\S.*[^+]|[^\\s=])\\1(?:\\[([\\w-]+)\\])?\\s*$/', $line, $m)  ) {
         $toccnt++;
-        $anchor = @$m[4] ? $m[4] : "toc$toccnt";
+        $anchor = $m[4] ?? "toc$toccnt";
         $txt = $this->esc(trim($m[3]));
         $level = strlen($m[1]);
         
@@ -826,7 +821,7 @@ class T2T {
     if($fname == '-') return array(
       '' => '-', '%f'=> '-', '%F'=> '-', '%e'=> '', 
       '%p'=> '-', '%d'=> '.', '%D'=> '.', '%%'=>'%');
-    preg_match('/\\.([^.\\/]+)$/',$fname, $m); $ext=@$m[1];
+    preg_match('/\\.([^.\\/]+)$/',$fname, $m); $ext = $m[1] ?? '';
     return array(
       ''  => basename($fname),
       '%f'=> basename($fname),
@@ -841,7 +836,7 @@ class T2T {
   function read($filename, $allowed = false) { # get a file content
     if(!$allowed) return '';
     if(!file_exists($filename)) return '';
-    return str_replace("\r", '', implode('', @file($filename)));
+    return str_replace("\r", '', implode('', file($filename)));
   }
   
   # get the Header, Config area and Body of a t2t file
